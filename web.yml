@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+  labels:
+    app: web
+spec:
+  ports:
+    - port: 3000
+  selector:
+    app: web
+    tier: frontend
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: web-pv-claim
+  labels:
+    app: web
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  labels:
+    app: web
+spec:
+  selector:
+    matchLabels:
+      app: web
+      tier: frontend
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: web
+        tier: frontend
+    spec:
+      containers:
+      - image: swakey/devtalk:0.4
+        name: web
+        # env:
+        # - name: WORDPRESS_DB_HOST
+        #   value: wordpress-mysql
+        # - name: WORDPRESS_DB_PASSWORD
+        #   valueFrom:
+        #     secretKeyRef:
+        #       name: mysql-pass
+        #       key: password
+        ports:
+        - containerPort: 80
+          name: web
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        volumeMounts:
+        - name: web-persistent-storage
+          mountPath: /var/www/html
+      volumes:
+      - name: web-persistent-storage
+        persistentVolumeClaim:
+          claimName: web-pv-claim

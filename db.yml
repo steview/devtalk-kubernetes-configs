@@ -1,0 +1,68 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: db
+  labels:
+    app: web
+spec:
+  ports:
+    - port: 5432
+  selector:
+    app: web
+    tier: db
+  clusterIP: None
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: db-pv-claim
+  labels:
+    app: web
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db
+  labels:
+    app: web
+spec:
+  selector:
+    matchLabels:
+      app: web
+      tier: db
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: web
+        tier: db
+    spec:
+      containers:
+        - image: postgres:12
+          name: db
+          env:
+            - name: POSTGRES_PASSWORD
+              value: password
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          ports:
+            - containerPort: 5432
+              name: db
+          resources:
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgredb
+      volumes:
+       - name: postgredb
+         persistentVolumeClaim:
+           claimName: db-pv-claim
