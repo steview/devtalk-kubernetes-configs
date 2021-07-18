@@ -45,16 +45,14 @@ spec:
         tier: frontend
     spec:
       containers:
-      - image: swakey/devtalk:0.4
+      - image: swakey/devtalk:0.7
         name: web
-        # env:
-        # - name: WORDPRESS_DB_HOST
-        #   value: wordpress-mysql
-        # - name: WORDPRESS_DB_PASSWORD
-        #   valueFrom:
-        #     secretKeyRef:
-        #       name: mysql-pass
-        #       key: password
+        env:
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: secret
+                key: db_password
         ports:
         - containerPort: 80
           name: web
