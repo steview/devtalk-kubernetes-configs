@@ -1,16 +1,3 @@
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: web-pv-claim
-  labels:
-    app: web
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 2Gi
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -45,11 +32,4 @@ spec:
         resources:
           limits:
             memory: "256Mi"
-            cpu: "500m"
-        volumeMounts:
-        - name: web-persistent-storage
-          mountPath: /var/www/html
-      volumes:
-      - name: web-persistent-storage
-        persistentVolumeClaim:
-          claimName: web-pv-claim
+            cpu: "250m"
